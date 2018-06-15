@@ -17,7 +17,7 @@ let fakeServerData = {
   }
 };
 
-class songCounter extends Component {
+class SongCounter extends Component {
   render() {
     return (
       <div style={{width: "40%", display: "inline-block"}}>
@@ -40,15 +40,16 @@ class Filter extends Component {
 
 class Playlist extends Component {
   render() {
+    let playlist = this.props.playlist
     return(
-      <div style={{...defaultStyle}}>
+      <div style={{defaultStyle}}>
         {/* <img/> */}
-        <h3>Playlist Name</h3>
+        <h3>{playlist.name}</h3>
         <ul>
-          <li>Song 1</li>
-          <li>Song 2</li>
-          <li>Song 3</li>
-        </ul>
+          {playlist.songs.map(song =>
+          <li>{song}</li>
+            )}
+            </ul>
       </div>
     );
   }
@@ -67,18 +68,22 @@ class App extends Component {
   }
 
   render() {
+    let userServerData = this.state.serverData.user
     return (
       <div className="App">
         {
           this.state.serverData.user ?
           <div className="componentView">
           <h1>Title</h1>
-            <h2 style={defaultStyle}>{this.state.serverData.user &&
-              this.state.serverData.user.name}'s Playlist
+            <h2 style={defaultStyle}>{userServerData &&
+              userServerData.name}'s Playlist
             </h2>
-            <songCounter playlist={this.state.serverData.user.playlist}/>
+            <SongCounter playlist={userServerData.playlist}/>
           <Filter/>
-          <Playlist/>
+          {userServerData.playlist.map(playlist =>
+            <Playlist playlist={playlist}/>
+          )}
+
         </div> : <h1>Loading...</h1>
         }
       </div>
