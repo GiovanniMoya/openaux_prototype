@@ -17,7 +17,7 @@ let fakeServerData = {
   }
 };
 
-class Aggregate extends Component {
+class songCounter extends Component {
   render() {
     return (
       <div style={{width: "40%", display: "inline-block"}}>
@@ -61,22 +61,26 @@ class App extends Component {
   }
 
   componentDidMount() {
-
-   this.setState({serverData: fakeServerData});
+    setTimeout(() => {
+       this.setState({serverData: fakeServerData});
+     }, 1000);
   }
 
   render() {
     return (
       <div className="App">
-        <h1>Title</h1>
-        <h2 style={defaultStyle}>{this.state.serverData.user &&
-          this.state.serverData.user.name}'s Playlist
-        </h2>
-        <Aggregate playlist={this.state.serverData.user &&
-          this.state.serverData.user.playlist}/>
-        <Aggregate/>
-        <Filter/>
-        <Playlist/>
+        {
+          this.state.serverData.user ?
+          <div className="componentView">
+          <h1>Title</h1>
+            <h2 style={defaultStyle}>{this.state.serverData.user &&
+              this.state.serverData.user.name}'s Playlist
+            </h2>
+            <songCounter playlist={this.state.serverData.user.playlist}/>
+          <Filter/>
+          <Playlist/>
+        </div> : <h1>Loading...</h1>
+        }
       </div>
     );
   }
