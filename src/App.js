@@ -44,18 +44,63 @@ class Filter extends Component {
 
 class Playlist extends Component {
   render() {
+    let listStyle = {
+      listStyle: "none"
+    }
     let song = this.props.songs
     return(
       <div style={{defaultStyle}}>
         {/* <img/> */}
         {/* <h3>{playlist.name}</h3> */}
-        <ul>
-          <li>{song.name}</li>
+        <ul style={listStyle}>
+          <li>{song.name}<VoteButton/></li>
             </ul>
       </div>
     );
   }
 }
+
+class VoteButton extends React.Component {
+  constructor(props) {
+  super(props);
+  this.state = {voteValue: 0};
+
+    // This binding is necessary to make `this` work in the callback
+    this.onUpvoteClick = this.onUpvoteClick.bind(this);
+    this.onDownVoteClick = this.onDownVoteClick.bind(this);
+  }
+
+  onUpvoteClick() {
+    this.setState(prevState => this.state.voteValue = prevState.voteValue + 1
+   );
+  }
+
+  onDownVoteClick() {
+    this.setState((prevState) => this.state.voteValue = prevState.voteValue - 1
+    );
+  }
+
+  render() {
+
+    let widthStyle = {
+      padding: "8px",
+      margin: "20px"
+      }
+
+    return (
+      <div>
+        <button onClick={this.onUpvoteClick} style={widthStyle}>
+          Up Vote
+        </button>
+          {this.state.voteValue}
+          <button onClick={this.onDownVoteClick} style={widthStyle}>
+            Down Vote
+          </button>
+      </div>
+    );
+  }
+}
+
 
 class App extends Component {
   constructor(props) {
@@ -79,23 +124,16 @@ class App extends Component {
         {
           this.state.serverData.user ?
           <div className="componentView">
-          <h1>OpenAux</h1>
-            <h2 style={defaultStyle}>{userServerData &&
-              userServerData.name}'s Playlist
-            </h2>
-            <SongCounter playlist={userServerData.playlist}/>
-          <Filter onFilterChange={text => this.setState({filterString: text})}/>
-          {/* { this.state.filterString
-            userServerData.playlist.songs.filter(song => song.name.includes(this.state.filterString))
-            .map(playlist => <Playlist playlist={playlist}/>) :
-           userServerData.playlist.map(playlist => <Playlist playlist={playlist}/>)
-        } */}
-        {
-          userServerData.playlist[0].songs.filter(arr => arr.name.toLowerCase()
-            .includes(this.state.filterString.toLowerCase()))
-            .map(song => <Playlist songs={song} key={song.name}/>)
-       }
-        </div> : <h1>Loading...</h1>
+            <h1>OpenAux</h1>
+              <h2 style={defaultStyle}>{userServerData &&
+                userServerData.name}'s Playlist
+              </h2>
+              <SongCounter playlist={userServerData.playlist}/>
+              <Filter onFilterChange={text => this.setState({filterString: text})}/>
+              {userServerData.playlist[0].songs.filter(arr => arr.name.toLowerCase()
+                .includes(this.state.filterString.toLowerCase()))
+                .map(song => <Playlist songs={song} key={song.name}/>)}
+          </div> : <h1>Loading...</h1>
         }
       </div>
     );
