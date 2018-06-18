@@ -11,7 +11,11 @@ let fakeServerData = {
     playlist: [
       {
           name: "my favorites",
-          songs: ["ms. jackson", "talk", "3005"]
+          songs: [
+            {name: "ms. jackson"},
+            {name: "talk"},
+            {name: "3005"}
+          ]
       }
     ]
   }
@@ -32,7 +36,7 @@ class Filter extends Component {
     return (
       <div style={defaultStyle}>
         {/* <img/> */}
-        <input type="text"/>
+        <input type="text" onKeyUp={event => this.props.onFilterChange(event.target.value)}/>
       </div>
     );
   }
@@ -40,15 +44,13 @@ class Filter extends Component {
 
 class Playlist extends Component {
   render() {
-    let playlist = this.props.playlist
+    let song = this.props.songs
     return(
       <div style={{defaultStyle}}>
         {/* <img/> */}
-        <h3>{playlist.name}</h3>
+        {/* <h3>{playlist.name}</h3> */}
         <ul>
-          {playlist.songs.map(song =>
-          <li>{song}</li>
-            )}
+          <li>{song.name}</li>
             </ul>
       </div>
     );
@@ -58,7 +60,10 @@ class Playlist extends Component {
 class App extends Component {
   constructor(props) {
     super(props);
-    this.state = {serverData: {}};
+    this.state = {
+      serverData: {},
+      filterString: ""
+    }
   }
 
   componentDidMount() {
@@ -74,16 +79,22 @@ class App extends Component {
         {
           this.state.serverData.user ?
           <div className="componentView">
-          <h1>Title</h1>
+          <h1>OpenAux</h1>
             <h2 style={defaultStyle}>{userServerData &&
               userServerData.name}'s Playlist
             </h2>
             <SongCounter playlist={userServerData.playlist}/>
-          <Filter/>
-          {userServerData.playlist.map(playlist =>
-            <Playlist playlist={playlist}/>
-          )}
-
+          <Filter onFilterChange={text => this.setState({filterString: text})}/>
+          {/* { this.state.filterString
+            userServerData.playlist.songs.filter(song => song.name.includes(this.state.filterString))
+            .map(playlist => <Playlist playlist={playlist}/>) :
+           userServerData.playlist.map(playlist => <Playlist playlist={playlist}/>)
+        } */}
+        {
+          userServerData.playlist[0].songs.filter(arr => arr.name.toLowerCase()
+            .includes(this.state.filterString.toLowerCase()))
+            .map(song => <Playlist songs={song} key={song.name}/>)
+       }
         </div> : <h1>Loading...</h1>
         }
       </div>
