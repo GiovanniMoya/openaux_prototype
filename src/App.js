@@ -114,9 +114,15 @@ class App extends Component {
   }
 
   componentDidMount() {
-    const parsed = queryString.parse(window.location.search)
-    console.log(parsed)
-  }
+    let parsed = queryString.parse(window.location.search)
+    // console.log(parsed)                                    console log accessToken object
+    let accessToken = parsed.access_token
+
+    fetch("https://api.spotify.com/v1/me", {headers: {
+       'Authorization': 'Bearer ' + accessToken
+   }}).then(response => response.json())
+      .then(data => console.log(data))
+}
 
   render() {
     let userServerData = this.state.serverData.user
