@@ -1,5 +1,8 @@
 import React, { Component } from 'react';
 import './App.css';
+const queryString = require('query-string')
+
+
 
 let defaultStyle = {
   color: "#000"
@@ -8,8 +11,7 @@ let defaultStyle = {
 let fakeServerData = {
   user: {
     name: "Clark",
-    playlist: [
-      {
+    playlist: [{
           name: "my favorites",
           songs: [
             {name: "ms. jackson"},
@@ -53,7 +55,7 @@ class Playlist extends Component {
         {/* <img/> */}
         {/* <h3>{playlist.name}</h3> */}
         <ul style={listStyle}>
-          <li>{song.name}<VoteButton/></li>
+          <li>{song.name} <VoteButton/></li>
             </ul>
       </div>
     );
@@ -76,7 +78,7 @@ class VoteButton extends React.Component {
   }
 
   onDownVoteClick() {
-    this.setState((prevState) => this.state.voteValue = prevState.voteValue - 1
+    this.setState((prevState) => this.state.voteValue = (prevState.voteValue - 1)
     );
   }
 
@@ -112,9 +114,8 @@ class App extends Component {
   }
 
   componentDidMount() {
-    setTimeout(() => {
-       this.setState({serverData: fakeServerData});
-     }, 1000);
+    const parsed = queryString.parse(window.location.search)
+    console.log(parsed)
   }
 
   render() {
@@ -133,7 +134,7 @@ class App extends Component {
               {userServerData.playlist[0].songs.filter(arr => arr.name.toLowerCase()
                 .includes(this.state.filterString.toLowerCase()))
                 .map(song => <Playlist songs={song} key={song.name}/>)}
-          </div> : <h1>Loading...</h1>
+          </div> : <button onClick={() => window.location = "htttp://localhost::8888/login"} style={{fontSize: "20px", margin: "20px"}}>Sign in to spotify</button>
         }
       </div>
     );
