@@ -2,26 +2,11 @@ import React, { Component } from 'react';
 import './App.css';
 const queryString = require('query-string')
 
-let count = 0
 
 let defaultStyle = {
   color: "#000"
 };
 
-let fakeServerData = {
-  user: {
-    name: "Clark",
-    playlist: [{
-          name: "my favorites",
-          songs: [
-            {name: "ms. jackson"},
-            {name: "talk"},
-            {name: "3005"}
-          ]
-      }
-    ]
-  }
-};
 
 class SongCounter extends Component {
   render() {
@@ -45,6 +30,10 @@ class Filter extends Component {
 }
 
 class Playlist extends Component {
+  constructor(props) {
+    super(props);
+      this.state = {voteValue: 0};
+  }
   render() {
     let listStyle = {
       listStyle: "none"
@@ -55,7 +44,7 @@ class Playlist extends Component {
         {/* <img/> */}
         {/* <h3>{playlist.name}</h3> */}
         <ul style={listStyle}>
-          <li>{song.name} <VoteButton/></li>
+          <li>{song.name} <VoteButton voteValue={this.state.voteValue} onVote={value => this.setState({voteValue: value})}/></li>
             </ul>
       </div>
     );
@@ -65,22 +54,7 @@ class Playlist extends Component {
 class VoteButton extends React.Component {
   constructor(props) {
   super(props);
-  this.state = {voteValue: 0};
-
-    // This binding is necessary to make `this` work in the callback
-    this.onUpvoteClick = this.onUpvoteClick.bind(this);
-    this.onDownVoteClick = this.onDownVoteClick.bind(this);
-  }
-
-  onUpvoteClick() {
-    this.setState(prevState => this.state.voteValue = prevState.voteValue + 1
-   );
-  }
-
-  onDownVoteClick() {
-    this.setState((prevState) => this.state.voteValue = (prevState.voteValue - 1)
-    );
-  }
+}
 
   render() {
 
@@ -91,11 +65,12 @@ class VoteButton extends React.Component {
 
     return (
       <div>
-        <button onClick={this.onUpvoteClick} style={widthStyle}>
+        {/* <button onClick={this.onUpvoteClick} style={widthStyle}> */}
+        <button onClick={() => this.props.onVote(this.props.voteValue+1)} style={widthStyle}>
           Up Vote
         </button>
-          {this.state.voteValue}
-          <button onClick={this.onDownVoteClick} style={widthStyle}>
+          {this.props.voteValue}
+          <button onClick={() => this.props.onVote(this.props.voteValue-1)} style={widthStyle}>
             Down Vote
           </button>
       </div>
@@ -150,13 +125,9 @@ class App extends Component {
                       })
                     })
           )})
-          console.log(this.state)
 }
 
   render() {
-  console.log(this.state)
-    console.log(count++)
-      console.log(this.state)
     let playlistToRender = this.state.user.userID && this.state.songs
     ? this.state.songs.filter(arr =>
       arr.name.toLowerCase().includes(this.state.filterString.toLowerCase()))
