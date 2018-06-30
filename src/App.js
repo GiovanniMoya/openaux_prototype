@@ -29,7 +29,7 @@ class Filter extends Component {
   }
 }
 
-class Playlist extends Component {
+class Song extends Component {
   constructor(props) {
     super(props);
       this.state = {voteValue: 0};
@@ -38,57 +38,57 @@ class Playlist extends Component {
     let listStyle = {
       listStyle: "none"
     }
+    let widthStyle = {
+      padding: "8px",
+      margin: "20px"
+      }
     let song = this.props.songs
     return(
       <div style={{defaultStyle}}>
         {/* <img/> */}
         {/* <h3>{playlist.name}</h3> */}
         <ul style={listStyle}>
-          <li>{song.name} <VoteButton voteValue={this.state.voteValue} onVote={value => this.setState({voteValue: value})}/></li>
-            </ul>
+          <li>{song.name}
+            <button onClick={() => this.props.onVote(this.props.voteValue+1)} style={widthStyle}>
+                    Up Vote
+                </button>
+                          {this.props.voteValue}
+            <button onClick={() => this.props.onVote(this.props.voteValue-1)} style={widthStyle}>
+                      Down Vote
+                </button>
+          </li>
+        </ul>
       </div>
     );
   }
 }
 
-class VoteButton extends React.Component {
-  constructor(props) {
-  super(props);
-}
-
-  render() {
-
-    let widthStyle = {
-      padding: "8px",
-      margin: "20px"
-      }
-
-    return (
-      <div>
-        {/* <button onClick={this.onUpvoteClick} style={widthStyle}> */}
-        <button onClick={() => this.props.onVote(this.props.voteValue+1)} style={widthStyle}>
-          Up Vote
-        </button>
-          {this.props.voteValue}
-          <button onClick={() => this.props.onVote(this.props.voteValue-1)} style={widthStyle}>
-            Down Vote
-          </button>
-      </div>
-    );
-  }
-}
+// class VoteButton extends React.Component {
+//   constructor(props) {
+//   super(props);
+// }
+//
+//   render() {
+//
+//
+//
+//     return (
+//       <div>
+//         {/* <button onClick={this.onUpvoteClick} style={widthStyle}> */}
+//
+//       </div>
+//     );
+//   }
+// }
 
 
 class App extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      user: {},
+      user: {name: "", userID: ""},
       filterString: "",
-      playlist: [{
-        songs: [],
-        playlistID: 1
-      }]
+      songs: [{name: "", voteValue: 0}],
     }
   }
 
@@ -121,7 +121,7 @@ class App extends Component {
                   .then(response => response.json())
                     .then(tracks => this.setState({
                       songs: tracks.items.map(item => {
-                        return {name:item.track.name}
+                        return {name:item.track.name, voteValue: 0}
                       })
                     })
           )})
@@ -132,7 +132,7 @@ class App extends Component {
     ? this.state.songs.filter(arr =>
       arr.name.toLowerCase().includes(this.state.filterString.toLowerCase()))
       : []
-
+          console.log(this.state)
     return (
       <div className="App">
         {
@@ -142,7 +142,7 @@ class App extends Component {
               <h2 style={defaultStyle}>{this.state.user.name}'s Playlist</h2>
               <SongCounter playlist={this.state.songs}/>
               <Filter onFilterChange={text => this.setState({filterString: text})}/>
-              {playlistToRender.map(song => <Playlist songs={song} key={song.name}/>)}
+              {playlistToRender.map(song => <Song songs={song} key={song.name} voteValue={song.voteValue} onVote={value => this.setState(prevState => {prevState: { ...prevState: {..song: }}}/>)}
           </div> : <button onClick={() => window.location = 'http://localhost:8888/login'} style={{fontSize: "20px", margin: "20px"}}>Sign in to spotify</button>
         }
       </div>
