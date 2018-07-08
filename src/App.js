@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import './App.css';
 const queryString = require('query-string')
-
+const { Map, Seq } = require('immutable')
 
 let defaultStyle = {
   color: "#000"
@@ -85,11 +85,12 @@ class Song extends Component {
 class App extends Component {
   constructor(props) {
     super(props);
-    this.state = {
-      user: {name: "", userID: ""},
-      filterString: "",
-      songs: [{name: "", voteValue: 0}],
-    }
+    this.state =
+      {
+        user: {userName: "", userID: ""},
+        filterString: "",
+        songs: [{name: "", value: 0}],
+      }
   }
 
   componentDidMount() {
@@ -128,11 +129,19 @@ class App extends Component {
 }
 
   render() {
+    console.log(this.state)
     let playlistToRender = this.state.user.userID && this.state.songs
     ? this.state.songs.filter(arr =>
       arr.name.toLowerCase().includes(this.state.filterString.toLowerCase()))
       : []
-          console.log(this.state)
+
+      function sortedSongs(songArr, songName, value) {
+        songArr.map(e => (e.name === songName) ? e.voteValue = value : e);
+        songArr.sort((a,b) => b.voteValue - a.voteValue)
+        return songArr
+      }
+
+
     return (
       <div className="App">
         {
@@ -142,7 +151,8 @@ class App extends Component {
               <h2 style={defaultStyle}>{this.state.user.name}'s Playlist</h2>
               <SongCounter playlist={this.state.songs}/>
               <Filter onFilterChange={text => this.setState({filterString: text})}/>
-              {playlistToRender.map(song => <Song songs={song} key={song.name} voteValue={song.voteValue} onVote={value => this.setState(prevState => {prevState: { ...prevState: {..song: }}}/>)}
+          {playlistToRender.map(song => <Song songs={song} key={song.name} voteValue={song.voteValue}
+            onVote={value => this.setState(prevState => ({songs: sortedSongs(prevState.songs,song.name,value)}))}/>)}
           </div> : <button onClick={() => window.location = 'http://localhost:8888/login'} style={{fontSize: "20px", margin: "20px"}}>Sign in to spotify</button>
         }
       </div>
