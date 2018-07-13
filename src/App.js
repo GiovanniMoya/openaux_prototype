@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import './App.css';
 const queryString = require('query-string')
-const { Map, Seq } = require('immutable')
 
 let defaultStyle = {
   color: "#000"
@@ -43,6 +42,15 @@ class Song extends Component {
       margin: "20px"
       }
     let song = this.props.songs
+
+    // function PlayPause(props) {
+    //   return(
+    //     <div>
+    //     <button onClick={(props.songStatus == "pause") ? props.onPlay(props.songStatus:"play") : props.onPlay(props.songStatus:"pause")}> {props.songStatus} </button>
+    //     </div>
+    //   );
+    // }
+
     return(
       <div style={{defaultStyle}}>
         {/* <img/> */}
@@ -56,12 +64,28 @@ class Song extends Component {
             <button onClick={() => this.props.onVote(this.props.voteValue-1)} style={widthStyle}>
                       Down Vote
                 </button>
+                <button onClick={(this.props.songStatus === "pause") ? () => this.props.onPlay("play") : () => this.props.onPlay("pause")} style={widthStyle}> {this.props.songStatus} </button>
           </li>
         </ul>
       </div>
     );
   }
 }
+
+// class PlayPause extends React.Component {
+//   constructor(props) {
+//     super(props);
+//   }
+//
+//   render() {
+//           let controlStatus = "play"
+//     return(
+//       <div>
+//         <button onClick={(this.props.status) ? controlStatus = "Pause" : controlStatus = "Play"}> {controlStatus} </button>
+//       </div>
+//     )
+//   }
+// }
 
 // class VoteButton extends React.Component {
 //   constructor(props) {
@@ -89,14 +113,14 @@ class App extends Component {
       {
         user: {userName: "", userID: ""},
         filterString: "",
-        songs: [{name: "", value: 0}],
+        songs: [{name: "", value: 0, songID: "", status: "pause"}],
       }
   }
 
   componentDidMount() {
     let parsed = queryString.parse(window.location.search)
     // console.log(parsed)                                    console log accessToken object
-    let accessToken = parsed.access_token
+    const accessToken = parsed.access_token
 
     if (!accessToken) return                                    // if no access token return to log in screen
 
@@ -121,15 +145,26 @@ class App extends Component {
                 })
                   .then(response => response.json())
                     .then(tracks => this.setState({
-                      songs: tracks.items.map(item => {
-                        return {name:item.track.name, voteValue: 0}
+                      songs: tracks.items.map(item => { console.log(item)
+                        return {name:item.track.name, voteValue: 0, songID: item.track.id, status: "pause"}
                       })
                     })
           )})
+
+   const script = document.createElement("script")
+
+   script.src = "https://sdk.scdn.co/spotify-player.js"
+   script.async = true
+
+   document.body.appendChild(script)
+
+
 }
+
 
   render() {
     console.log(this.state)
+    console.log(window.Spotify)
     let playlistToRender = this.state.user.userID && this.state.songs
     ? this.state.songs.filter(arr =>
       arr.name.toLowerCase().includes(this.state.filterString.toLowerCase()))
@@ -141,6 +176,10 @@ class App extends Component {
         return songArr
       }
 
+      function togglePlayPause(tempSongArr, tempSongName, tempStatus) {
+        tempSongArr.map(e => (e.name === tempSongName) ? e.status = tempStatus : e.status = "pause")
+        return tempSongArr
+      }
 
     return (
       <div className="App">
@@ -151,8 +190,9 @@ class App extends Component {
               <h2 style={defaultStyle}>{this.state.user.name}'s Playlist</h2>
               <SongCounter playlist={this.state.songs}/>
               <Filter onFilterChange={text => this.setState({filterString: text})}/>
-          {playlistToRender.map(song => <Song songs={song} key={song.name} voteValue={song.voteValue}
-            onVote={value => this.setState(prevState => ({songs: sortedSongs(prevState.songs,song.name,value)}))}/>)}
+          {playlistToRender.map(song => <Song songs={song} key={song.name} voteValue={song.voteValue} songURI={song.songID} songStatus={song.status} onPlay={songStatus => this.setState(prevState => ({songs: togglePlayPause(prevState.songs, song.name, songStatus)}))}
+            onVote={value => this.setState(prevState => ({songs: sortedSongs(prevState.songs, song.name, value)}))}/>)}
+
           </div> : <button onClick={() => window.location = 'http://localhost:8888/login'} style={{fontSize: "20px", margin: "20px"}}>Sign in to spotify</button>
         }
       </div>
