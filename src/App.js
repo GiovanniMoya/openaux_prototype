@@ -158,13 +158,69 @@ class App extends Component {
 
    document.body.appendChild(script)
 
+   window.onSpotifyWebPlaybackSDKReady = () => {
+  const token = accessToken;
+  const player = new window.Spotify.Player({
+    name: 'Web Playback SDK Quick Start Player',
+    getOAuthToken: cb => { cb(token); }
+  });
+  // Error handling
+  player.addListener('initialization_error', ({ message }) => { console.error(message); });
+  player.addListener('authentication_error', ({ message }) => { console.error(message); });
+  player.addListener('account_error', ({ message }) => { console.error(message); });
+  player.addListener('playback_error', ({ message }) => { console.error(message); });
+
+  // Playback status updates
+  player.addListener('player_state_changed', state => { console.log(state); });
+
+  // Ready
+  player.addListener('ready', ({ device_id }) => {
+    console.log('Ready with Device ID', device_id);
+    window.device_id = device_id
+  });
+
+  // Not Ready
+  player.addListener('not_ready', ({ device_id }) => {
+    console.log('Device ID has gone offline', device_id);
+  });
+  // Connect to the player!
+  player.connect();
+
+};
 
 }
+
+    // playPauseReq(tempSongID) {
+    //   fetch("https://api.spotify.com/v1/me/player/play", {headers: {
+    //      'Authorization': 'Bearer ' + accessToken
+    //    }}, {"uris": ["spotify:track:" + tempSongID)}
+    //  }
+
+
+   playPauseReq(tempSongID) {
+     let parsed = queryString.parse(window.location.search)
+     // console.log(parsed)                                    console log accessToken object
+     const accessToken = parsed.access_token
+     console.log(tempSongID)
+
+     fetch("https://api.spotify.com/v1/me/player/play?device_id=" + window.device_id , {
+            method: 'PUT',
+            body: JSON.stringify({ uris: ['spotify:track:' + tempSongID] }),
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer ' + accessToken
+            },
+              }).then(res => {
+                  console.log(res)
+                }).catch(err => {
+                    console.log(err)
+                  })
+                }
 
 
   render() {
     console.log(this.state)
-    console.log(window.Spotify)
+    // console.log(window.Spotify)
     let playlistToRender = this.state.user.userID && this.state.songs
     ? this.state.songs.filter(arr =>
       arr.name.toLowerCase().includes(this.state.filterString.toLowerCase()))
@@ -176,8 +232,11 @@ class App extends Component {
         return songArr
       }
 
-      function togglePlayPause(tempSongArr, tempSongName, tempStatus) {
+      function togglePlayPause(tempSongArr, tempSongName, tempStatus, playPauseReq) {
         tempSongArr.map(e => (e.name === tempSongName) ? e.status = tempStatus : e.status = "pause")
+        let tempSongID = tempSongArr.find(x => x.name === tempSongName)
+        console.log(tempSongID)
+        playPauseReq(tempSongID.songID)
         return tempSongArr
       }
 
@@ -190,7 +249,7 @@ class App extends Component {
               <h2 style={defaultStyle}>{this.state.user.name}'s Playlist</h2>
               <SongCounter playlist={this.state.songs}/>
               <Filter onFilterChange={text => this.setState({filterString: text})}/>
-          {playlistToRender.map(song => <Song songs={song} key={song.name} voteValue={song.voteValue} songURI={song.songID} songStatus={song.status} onPlay={songStatus => this.setState(prevState => ({songs: togglePlayPause(prevState.songs, song.name, songStatus)}))}
+          {playlistToRender.map(song => <Song songs={song} key={song.name} voteValue={song.voteValue} songURI={song.songID} songStatus={song.status} onPlay={songStatus => this.setState(prevState => ({songs: togglePlayPause(prevState.songs, song.name, songStatus, this.playPauseReq)}))}
             onVote={value => this.setState(prevState => ({songs: sortedSongs(prevState.songs, song.name, value)}))}/>)}
 
           </div> : <button onClick={() => window.location = 'http://localhost:8888/login'} style={{fontSize: "20px", margin: "20px"}}>Sign in to spotify</button>
