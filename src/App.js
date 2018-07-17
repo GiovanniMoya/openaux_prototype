@@ -64,7 +64,7 @@ class Song extends Component {
             <button onClick={() => this.props.onVote(this.props.voteValue-1)} style={widthStyle}>
                       Down Vote
                 </button>
-                <button onClick={(this.props.songStatus === "pause") ? () => this.props.onPlay("play") : () => this.props.onPlay("pause")} style={widthStyle}> {this.props.songStatus} </button>
+                <button onClick={(this.props.songStatus === "pause") ? () => this.props.onPlay("play") : () => this.props.onPlay("pause")} style={widthStyle}> {(this.props.songStatus === "pause") ? "play" : "pause"} </button>
           </li>
         </ul>
       </div>
@@ -197,24 +197,39 @@ class App extends Component {
     //  }
 
 
-   playPauseReq(tempSongID) {
+   playPauseReq(tempSong) {
      let parsed = queryString.parse(window.location.search)
      // console.log(parsed)                                    console log accessToken object
      const accessToken = parsed.access_token
-     console.log(tempSongID)
-
-     fetch("https://api.spotify.com/v1/me/player/play?device_id=" + window.device_id , {
-            method: 'PUT',
-            body: JSON.stringify({ uris: ['spotify:track:' + tempSongID] }),
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': 'Bearer ' + accessToken
-            },
-              }).then(res => {
-                  console.log(res)
-                }).catch(err => {
-                    console.log(err)
-                  })
+     console.log(tempSong)
+     if(tempSong.status === "play")
+      {
+       fetch("https://api.spotify.com/v1/me/player/play?device_id=" + window.device_id , {
+              method: 'PUT',
+              body: JSON.stringify({ uris: ['spotify:track:' + tempSong.songID] }),
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + accessToken
+              },
+                }).then(res => {
+                    console.log(res)
+                  }).catch(err => {
+                      console.log(err)
+                    })
+      } else {
+        fetch("https://api.spotify.com/v1/me/player/pause?device_id=" + window.device_id , {
+               method: 'PUT',
+               body: JSON.stringify({ uris: ['spotify:track:' + tempSong.songID] }),
+               headers: {
+                 'Content-Type': 'application/json',
+                 'Authorization': 'Bearer ' + accessToken
+               },
+                 }).then(res => {
+                     console.log(res)
+                   }).catch(err => {
+                       console.log(err)
+                     })
+      }
                 }
 
 
@@ -236,7 +251,7 @@ class App extends Component {
         tempSongArr.map(e => (e.name === tempSongName) ? e.status = tempStatus : e.status = "pause")
         let tempSongID = tempSongArr.find(x => x.name === tempSongName)
         console.log(tempSongID)
-        playPauseReq(tempSongID.songID)
+        playPauseReq(tempSongID)
         return tempSongArr
       }
 
