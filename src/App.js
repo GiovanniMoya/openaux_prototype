@@ -22,7 +22,17 @@ class Filter extends Component {
     return (
       <div style={defaultStyle}>
         {/* <img/> */}
-        <input type="text" onKeyUp={event => this.props.onFilterChange(event.target.value)}/>
+        <input type="text" placeholder="search for song within playlist" onKeyUp={event => this.props.onFilterChange(event.target.value)}/>
+      </div>
+    );
+  }
+}
+
+class SearchSong extends Component {
+  render() {
+    return(
+      <div style={defaultStyle}>
+        <input type="text" placeholder= "add song to playlist" onKeyUp={event => this.props.onSearchSong(event.target.value)}/>
       </div>
     );
   }
@@ -50,7 +60,7 @@ class Song extends Component {
     //     </div>
     //   );
     // }
-
+                                                                                  //// TODO: convert buttons to function components
     return(
       <div style={{defaultStyle}}>
         {/* <img/> */}
@@ -59,51 +69,21 @@ class Song extends Component {
           <li>{song.name}
             <button onClick={() => this.props.onVote(this.props.voteValue+1)} style={widthStyle}>
                     Up Vote
-                </button>
-                          {this.props.voteValue}
+            </button>
+
+            {this.props.voteValue}
+
             <button onClick={() => this.props.onVote(this.props.voteValue-1)} style={widthStyle}>
                       Down Vote
-                </button>
-                <button onClick={(this.props.songStatus === "pause") ? () => this.props.onPlay("play") : () => this.props.onPlay("pause")} style={widthStyle}> {(this.props.songStatus === "pause") ? "play" : "pause"} </button>
+            </button>
+
+            <button onClick={(this.props.songStatus === "pause") ? () => this.props.onPlay("play") : () => this.props.onPlay("pause")} style={widthStyle}> {(this.props.songStatus === "pause") ? "play" : "pause"} </button>
           </li>
         </ul>
       </div>
     );
   }
 }
-
-// class PlayPause extends React.Component {
-//   constructor(props) {
-//     super(props);
-//   }
-//
-//   render() {
-//           let controlStatus = "play"
-//     return(
-//       <div>
-//         <button onClick={(this.props.status) ? controlStatus = "Pause" : controlStatus = "Play"}> {controlStatus} </button>
-//       </div>
-//     )
-//   }
-// }
-
-// class VoteButton extends React.Component {
-//   constructor(props) {
-//   super(props);
-// }
-//
-//   render() {
-//
-//
-//
-//     return (
-//       <div>
-//         {/* <button onClick={this.onUpvoteClick} style={widthStyle}> */}
-//
-//       </div>
-//     );
-//   }
-// }
 
 
 class App extends Component {
@@ -114,18 +94,19 @@ class App extends Component {
         user: {userName: "", userID: ""},
         filterString: "",
         songs: [{name: "", value: 0, songID: "", status: "pause"}],
+        queriedSongList: [{name: "",}]
       }
   }
 
   componentDidMount() {
     let parsed = queryString.parse(window.location.search)
     // console.log(parsed)                                    console log accessToken object
-    const accessToken = parsed.access_token
+    window.accessToken = parsed.access_token
 
-    if (!accessToken) return                                    // if no access token return to log in screen
+    if (!window.accessToken) return                                    // if no access token return to log in screen
 
     fetch("https://api.spotify.com/v1/me", {headers: {
-       'Authorization': 'Bearer ' + accessToken
+       'Authorization': 'Bearer ' + window.accessToken
    }}).then(response => response.json())
       .then(data => this.setState({user: {name: data.display_name, userID: data.uri.slice(13)}}))
 
@@ -135,13 +116,13 @@ class App extends Component {
    //    .then(data => this.setState({playlist: {songs: [], playlistID: data.items[0].id}}))
 
       fetch("https://api.spotify.com/v1/me/playlists", {headers: {
-         'Authorization': 'Bearer ' + accessToken
+         'Authorization': 'Bearer ' + window.accessToken
        }}).then(response => response.json())
             .then(playlistData => {
               // console.log(playlistData.items[0])
               let playlist = playlistData.items[0]
                 let trackDataPromise = fetch(playlist.tracks.href, {
-                  headers: {'Authorization': 'Bearer ' + accessToken}
+                  headers: {'Authorization': 'Bearer ' + window.accessToken}
                 })
                   .then(response => response.json())
                     .then(tracks => this.setState({
@@ -159,7 +140,7 @@ class App extends Component {
    document.body.appendChild(script)
 
    window.onSpotifyWebPlaybackSDKReady = () => {
-  const token = accessToken;
+  const token = window.accessToken;
   const player = new window.Spotify.Player({
     name: 'Web Playback SDK Quick Start Player',
     getOAuthToken: cb => { cb(token); }
@@ -190,17 +171,11 @@ class App extends Component {
 
 }
 
-    // playPauseReq(tempSongID) {
-    //   fetch("https://api.spotify.com/v1/me/player/play", {headers: {
-    //      'Authorization': 'Bearer ' + accessToken
-    //    }}, {"uris": ["spotify:track:" + tempSongID)}
-    //  }
-
 
    playPauseReq(tempSong) {
-     let parsed = queryString.parse(window.location.search)
-     // console.log(parsed)                                    console log accessToken object
-     const accessToken = parsed.access_token
+     // let parsed = queryString.parse(window.location.search)
+     // // console.log(parsed)                                    console log accessToken object
+     // const accessToken = parsed.access_token
      console.log(tempSong)
      if(tempSong.status === "play")
       {
@@ -209,7 +184,7 @@ class App extends Component {
               body: JSON.stringify({ uris: ['spotify:track:' + tempSong.songID] }),
               headers: {
                 'Content-Type': 'application/json',
-                'Authorization': 'Bearer ' + accessToken
+                'Authorization': 'Bearer ' + window.accessToken
               },
                 }).then(res => {
                     console.log(res)
@@ -222,7 +197,7 @@ class App extends Component {
                body: JSON.stringify({ uris: ['spotify:track:' + tempSong.songID] }),
                headers: {
                  'Content-Type': 'application/json',
-                 'Authorization': 'Bearer ' + accessToken
+                 'Authorization': 'Bearer ' + window.accessToken
                },
                  }).then(res => {
                      console.log(res)
@@ -233,8 +208,26 @@ class App extends Component {
                 }
 
 
+
+
+      searchList(tempQueryString) {
+        let sortedQueriedSongs;
+          fetch("https://api.spotify.com/v1/search?q=one+more+time&type=track&limit=5", { headers: {
+                   'Authorization': 'Bearer ' + window.accessToken}
+                 }).then(res => res.json())
+                    .then(data => {sortedQueriedSongs = data.tracks.items.map(e => ({name: e.name}))
+                                    this.setState({queriedSongList: sortedQueriedSongs})
+                                  })
+                    .then(data => console.log(data))
+                   .catch(err => {
+                         console.log(err)
+                       })
+
+      }
+
+
   render() {
-    console.log(this.state)
+
     // console.log(window.Spotify)
     let playlistToRender = this.state.user.userID && this.state.songs
     ? this.state.songs.filter(arr =>
@@ -264,9 +257,10 @@ class App extends Component {
               <h2 style={defaultStyle}>{this.state.user.name}'s Playlist</h2>
               <SongCounter playlist={this.state.songs}/>
               <Filter onFilterChange={text => this.setState({filterString: text})}/>
+              <SearchSong onSearchSong={text => this.searchList(text)}/>
           {playlistToRender.map(song => <Song songs={song} key={song.name} voteValue={song.voteValue} songURI={song.songID} songStatus={song.status} onPlay={songStatus => this.setState(prevState => ({songs: togglePlayPause(prevState.songs, song.name, songStatus, this.playPauseReq)}))}
             onVote={value => this.setState(prevState => ({songs: sortedSongs(prevState.songs, song.name, value)}))}/>)}
-
+            {console.log(this.state)}
           </div> : <button onClick={() => window.location = 'http://localhost:8888/login'} style={{fontSize: "20px", margin: "20px"}}>Sign in to spotify</button>
         }
       </div>
