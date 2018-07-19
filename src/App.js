@@ -212,16 +212,17 @@ class App extends Component {
 
       searchList(tempQueryString) {
         let sortedQueriedSongs;
-          fetch("https://api.spotify.com/v1/search?q=one+more+time&type=track&limit=5", { headers: {
-                   'Authorization': 'Bearer ' + window.accessToken}
-                 }).then(res => res.json())
-                    .then(data => {sortedQueriedSongs = data.tracks.items.map(e => ({name: e.name}))
-                                    this.setState({queriedSongList: sortedQueriedSongs})
-                                  })
-                    .then(data => console.log(data))
-                   .catch(err => {
-                         console.log(err)
-                       })
+          fetch("https://api.spotify.com/v1/search?q=" + tempQueryString + "&type=track&limit=5", { headers: {
+                           'Authorization': 'Bearer ' + window.accessToken}
+                         }).then(res => res.json())
+                            .then(data => {sortedQueriedSongs = data.tracks.items.map(e => ({name: e.name}))
+                                            this.setState({queriedSongList: sortedQueriedSongs})
+                                          })
+                            .then(data => console.log(data))
+                           .catch(err => {
+                                 console.log(err)
+                               })
+
 
       }
 
@@ -257,7 +258,7 @@ class App extends Component {
               <h2 style={defaultStyle}>{this.state.user.name}'s Playlist</h2>
               <SongCounter playlist={this.state.songs}/>
               <Filter onFilterChange={text => this.setState({filterString: text})}/>
-              <SearchSong onSearchSong={text => this.searchList(text)}/>
+              <SearchSong onSearchSong={text => this.searchList(text.replace(/ /g, "+"))}/>
           {playlistToRender.map(song => <Song songs={song} key={song.name} voteValue={song.voteValue} songURI={song.songID} songStatus={song.status} onPlay={songStatus => this.setState(prevState => ({songs: togglePlayPause(prevState.songs, song.name, songStatus, this.playPauseReq)}))}
             onVote={value => this.setState(prevState => ({songs: sortedSongs(prevState.songs, song.name, value)}))}/>)}
             {console.log(this.state)}
