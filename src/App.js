@@ -22,7 +22,8 @@ class Filter extends Component {
     return (
       <div style={defaultStyle}>
         {/* <img/> */}
-        <input type="text" placeholder="search for song within playlist" onKeyUp={event => this.props.onFilterChange(event.target.value)}/>
+        <label style={{display: 'block'}} for="songNameInPlaylist">search for song within playlist</label>
+        <input type="text" placeholder="playlist" id="songNameInPlaylist" name="songNameInPlaylist" onKeyUp={event => this.props.onFilterChange(event.target.value)}/>
       </div>
     );
   }
@@ -32,7 +33,9 @@ class SearchSong extends Component {
   render() {
     return(
       <div style={defaultStyle}>
-        <input type="text" placeholder= "add song to playlist" onKeyUp={event => this.props.onSearchSong(event.target.value)}/>
+        <label style={{display: 'block'}} for="songSearchInput" name="songSearchForm">search song to add</label>
+        <input type="text" placeholder= "search song" id="songName" name="songSearchInput" onKeyUp={event => this.props.onSearchSong(event.target.value)}/>
+        {this.props.searchSongsDisplay.map(song => <ul style={{listStyle: "none"}}><li>{song.name}</li></ul>)}
       </div>
     );
   }
@@ -235,6 +238,8 @@ class App extends Component {
       arr.name.toLowerCase().includes(this.state.filterString.toLowerCase()))
       : []
 
+
+
       function sortedSongs(songArr, songName, value) {
         songArr.map(e => (e.name === songName) ? e.voteValue = value : e);
         songArr.sort((a,b) => b.voteValue - a.voteValue)
@@ -258,7 +263,7 @@ class App extends Component {
               <h2 style={defaultStyle}>{this.state.user.name}'s Playlist</h2>
               <SongCounter playlist={this.state.songs}/>
               <Filter onFilterChange={text => this.setState({filterString: text})}/>
-              <SearchSong onSearchSong={text => this.searchList(text.replace(/ /g, "+"))}/>
+              <SearchSong searchSongsDisplay={this.state.queriedSongList} onSearchSong={text => this.searchList(text.replace(/ /g, "+"))}/>
           {playlistToRender.map(song => <Song songs={song} key={song.name} voteValue={song.voteValue} songURI={song.songID} songStatus={song.status} onPlay={songStatus => this.setState(prevState => ({songs: togglePlayPause(prevState.songs, song.name, songStatus, this.playPauseReq)}))}
             onVote={value => this.setState(prevState => ({songs: sortedSongs(prevState.songs, song.name, value)}))}/>)}
             {console.log(this.state)}
