@@ -37,7 +37,7 @@ class SearchSong extends Component {
         <input type="text" placeholder= "search song" id="songName" name="songSearchInput" onKeyUp={event => this.props.onSearchSong(event.target.value)}/>
 
         {/* {if(document.getElementById("songName").value == "") this.setState({queriedSongList: []})} */}
-        {this.props.searchSongsDisplay.map(song => <ul style={{listStyle: "none"}}><li>{song.name}</li></ul>)}
+        {this.props.searchSongsDisplay.map(song => <ul style={{listStyle: "none"}}><li>{song.name} {song.artists}</li></ul>)}
       </div>
     );
   }
@@ -220,7 +220,8 @@ class App extends Component {
           fetch("https://api.spotify.com/v1/search?q=" + tempQueryString + "&type=track&limit=5", { headers: {
                            'Authorization': 'Bearer ' + window.accessToken}
                          }).then(res => res.json())
-                            .then(data => {sortedQueriedSongs = data.tracks.items.map(e => ({name: e.name}))
+                            .then(data => { console.log(data.tracks.items[0].id)
+                                            sortedQueriedSongs = data.tracks.items.map(e => ({name: e.name, artists: e.artists[0].name, songURI: e.id }))
                                             this.setState({queriedSongList: sortedQueriedSongs})
                                           })
                             .then(data => console.log(data))
