@@ -35,6 +35,8 @@ class SearchSong extends Component {
       <div style={defaultStyle}>
         <label style={{display: 'block'}} for="songSearchInput" name="songSearchForm">search song to add</label>
         <input type="text" placeholder= "search song" id="songName" name="songSearchInput" onKeyUp={event => this.props.onSearchSong(event.target.value)}/>
+
+        {/* {if(document.getElementById("songName").value == "") this.setState({queriedSongList: []})} */}
         {this.props.searchSongsDisplay.map(song => <ul style={{listStyle: "none"}}><li>{song.name}</li></ul>)}
       </div>
     );
@@ -263,7 +265,7 @@ class App extends Component {
               <h2 style={defaultStyle}>{this.state.user.name}'s Playlist</h2>
               <SongCounter playlist={this.state.songs}/>
               <Filter onFilterChange={text => this.setState({filterString: text})}/>
-              <SearchSong searchSongsDisplay={this.state.queriedSongList} onSearchSong={text => this.searchList(text.replace(/ /g, "+"))}/>
+              <SearchSong searchSongsDisplay={this.state.queriedSongList} onSearchSong={text => text == "" ? this.setState({queriedSongList: []}) : this.searchList(text.replace(/ /g, "+"))}/>
           {playlistToRender.map(song => <Song songs={song} key={song.name} voteValue={song.voteValue} songURI={song.songID} songStatus={song.status} onPlay={songStatus => this.setState(prevState => ({songs: togglePlayPause(prevState.songs, song.name, songStatus, this.playPauseReq)}))}
             onVote={value => this.setState(prevState => ({songs: sortedSongs(prevState.songs, song.name, value)}))}/>)}
             {console.log(this.state)}
