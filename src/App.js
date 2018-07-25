@@ -22,7 +22,7 @@ class Filter extends Component {
     return (
       <div style={defaultStyle}>
         {/* <img/> */}
-        <label style={{display: 'block'}} for="songNameInPlaylist">search for song within playlist</label>
+        <label style={{display: 'block'}} htmlFor="songNameInPlaylist">search for song within playlist</label>
         <input type="text" placeholder="playlist" id="songNameInPlaylist" name="songNameInPlaylist" onKeyUp={event => this.props.onFilterChange(event.target.value)}/>
       </div>
     );
@@ -33,9 +33,9 @@ class SearchSong extends Component {
   render() {
     return(
       <div style={defaultStyle}>
-        <label style={{display: 'block'}} for="songSearchInput" name="songSearchForm">search song to add</label>
+        <label style={{display: 'block'}} htmlFor="songSearchInput" name="songSearchForm">search song to add</label>
         <input type="text" placeholder= "search song" id="songName" name="songSearchInput" onKeyUp={event => this.props.onSearchSong(event.target.value)}/>
-        {this.props.searchSongsDisplay.map(song => <ul style={{listStyle: "none"}}><li><button onClick={() => this.props.onAddSong(song.songURI)}>{song.name} {song.artist}</button></li></ul>)}
+        {this.props.searchSongsDisplay.map(song => <ul style={{listStyle: "none"}}><li><button onClick={() => this.props.onAddSong(song.songURI,song.name)}>{song.name} {song.artist}</button></li></ul>)}
       </div>
     );
   }
@@ -230,7 +230,7 @@ class App extends Component {
                                })
       }
 
-      addSongToPlaylist(tempSongURI) {
+      addSongToPlaylist(tempSongURI, tempSongName, tempSongList) {
         console.log(this.state.playlistId)
         fetch("https://api.spotify.com/v1/users/" + this.state.user.userName + "/playlists/" + this.state.playlistId + "/tracks?uris=spotify:track:"+ tempSongURI, {
                method: 'POST',
@@ -241,10 +241,12 @@ class App extends Component {
                },
              }).then(res => res.json())
              .then(data => console.log(data))
+             .then(this.setState({songs: tempSongList.concat([{name: tempSongName, voteValue: 0, songID: tempSongURI, status: "pause"}])}))
+             .then(this.setState(prevState => console.log(prevState)))
              .catch(error => console.log(error))
               }
 
-    
+
 
   render() {
 
@@ -279,7 +281,7 @@ class App extends Component {
               <h2 style={defaultStyle}>{this.state.user.name}'s Playlist</h2>
               <SongCounter playlist={this.state.songs}/>
               <Filter onFilterChange={text => this.setState({filterString: text})}/>
-              <SearchSong searchSongsDisplay={this.state.queriedSongList} onSearchSong={text => text == "" ? this.setState({queriedSongList: []}) : this.searchList(text.replace(/ /g, "+"))} onAddSong={tempSongURI => this.addSongToPlaylist(tempSongURI)}/>
+              <SearchSong searchSongsDisplay={this.state.queriedSongList} onSearchSong={text => text == "" ? this.setState({queriedSongList: []}) : this.searchList(text.replace(/ /g, "+"))} onAddSong={(tempSongURI,tempSongName) => this.addSongToPlaylist(tempSongURI, tempSongName, this.state.songs)}/>
           {playlistToRender.map(song => <Song songs={song} key={song.name} voteValue={song.voteValue} songURI={song.songID} songStatus={song.status} onPlay={songStatus => this.setState(prevState => ({songs: togglePlayPause(prevState.songs, song.name, songStatus, this.playPauseReq)}))}
             onVote={value => this.setState(prevState => ({songs: sortedSongs(prevState.songs, song.name, value)}))}/>)}
             {console.log(this.state)}
