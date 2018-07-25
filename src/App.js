@@ -81,6 +81,7 @@ class Song extends Component {
             </button>
 
             <button onClick={(this.props.songStatus === "pause") ? () => this.props.onPlay("play") : () => this.props.onPlay("pause")} style={widthStyle}> {(this.props.songStatus === "pause") ? "play" : "pause"} </button>
+            <button onClick={() => this.props.onDelete(this.props.songURI)}>Remove</button>
           </li>
         </ul>
       </div>
@@ -246,6 +247,25 @@ class App extends Component {
              .catch(error => console.log(error))
               }
 
+    deleteSong(tempSongURI, tempSongList) {
+      console.log(tempSongURI)
+      let tracksToDelete = {"tracks" : [{"uri": "spotify:track:" + tempSongURI}]}
+      fetch("https://api.spotify.com/v1/users/" + this.state.user.userName + "/playlists/" + this.state.playlistId + "/tracks", {
+      // fetch("https://api.spotify.com/v1/users/" + this.state.user.userName + "/playlists/" + this.state.playlistId + "/tracks?uris=spotify:track:"+ [{tempSongURI}], {
+             method: 'DELETE',
+             body: JSON.stringify({ "tracks": [{"uri": "spotify:track:" + tempSongURI}] }),
+             headers: {
+               'Content-Type': 'application/json',
+               'Authorization': 'Bearer ' + window.accessToken
+             },
+           }).then(res => res.json())
+           .then(data => console.log(data))
+           .then(this.setState({songs: tempSongList.filter(e => e.songID !== tempSongURI)}))
+           .then(this.setState(prevState => console.log(prevState)))
+           .catch(error => console.log(error))
+            }
+
+
 
 
   render() {
@@ -283,7 +303,7 @@ class App extends Component {
               <Filter onFilterChange={text => this.setState({filterString: text})}/>
               <SearchSong searchSongsDisplay={this.state.queriedSongList} onSearchSong={text => text == "" ? this.setState({queriedSongList: []}) : this.searchList(text.replace(/ /g, "+"))} onAddSong={(tempSongURI,tempSongName) => this.addSongToPlaylist(tempSongURI, tempSongName, this.state.songs)}/>
           {playlistToRender.map(song => <Song songs={song} key={song.name} voteValue={song.voteValue} songURI={song.songID} songStatus={song.status} onPlay={songStatus => this.setState(prevState => ({songs: togglePlayPause(prevState.songs, song.name, songStatus, this.playPauseReq)}))}
-            onVote={value => this.setState(prevState => ({songs: sortedSongs(prevState.songs, song.name, value)}))}/>)}
+            onVote={value => this.setState(prevState => ({songs: sortedSongs(prevState.songs, song.name, value)}))} onDelete={tempSongURI => this.deleteSong(tempSongURI,this.state.songs)}/>)}
             {console.log(this.state)}
           </div> : <button onClick={() => window.location = 'http://localhost:8888/login'} style={{fontSize: "20px", margin: "20px"}}>Sign in to spotify</button>
         }
